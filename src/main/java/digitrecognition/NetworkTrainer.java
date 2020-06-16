@@ -3,8 +3,8 @@ package digitrecognition;
 import java.io.File;
 import java.util.Random;
 
-import mnistdatareader.MnistDataReader;
-import mnistdatareader.MnistMatrix;
+//import mnistdatareader.MnistDataReader;
+//import mnistdatareader.MnistMatrix;
 import org.apache.log4j.BasicConfigurator;
 import org.datavec.api.io.labels.ParentPathLabelGenerator;
 import org.datavec.api.split.FileSplit;

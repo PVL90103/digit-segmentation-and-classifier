@@ -66,7 +66,7 @@ import static org.bytedeco.opencv.helper.opencv_imgcodecs.cvLoadImage;
 public class Application {
 
     private static MultiLayerNetwork restored;
-    private final static String IMAGEPATH = "samples/sample6-1.jpg";
+    private final static String IMAGEPATH = "samples/sample18.jpg";
     private final static String[] DIGITS = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
 
     public Application() {
@@ -111,12 +111,19 @@ public class Application {
 
         /*Load image in grayscale mode*/
         IplImage image = cvLoadImage(IMAGEPATH, 0);
-        imwrite("samples/gray.jpg", new Mat(image)); // Save gray version of image*/
+        //imwrite("samples/gray.jpg", new Mat(image)); // Save gray version of image*/
+
+
+        /*Gaussian blur*/
+        Mat filtered = new Mat();
+        GaussianBlur(new Mat(image), filtered, new Size(5,5), 0);
+        IplImage filteredIm = new IplImage(filtered);
+        imwrite("samples/filtered.jpg", new Mat(filteredIm));
 
         /*Binarising Image*/
-        IplImage binimg = cvCreateImage(image.asCvMat().cvSize(), IPL_DEPTH_8U, 1);
-        cvThreshold(image, binimg, 0, 255, CV_THRESH_OTSU);
-        imwrite("samples/binarise.jpg", new Mat(binimg)); // Save binarised version of image*/
+        IplImage binimg = cvCreateImage(filteredIm.asCvMat().cvSize(), IPL_DEPTH_8U, 1);
+        cvThreshold(filteredIm, binimg, 0, 255, CV_THRESH_OTSU);
+        //imwrite("samples/binarise.jpg", new Mat(binimg)); // Save binarised version of image*/
 
         /*Invert image */
         Mat inverted = new Mat();
@@ -125,15 +132,15 @@ public class Application {
         imwrite("samples/invert.jpg", new Mat(inverimg)); // Save dilated version of image*/
 
 
-        /*Dilate image to increase the thickness of each digit*/
-        IplImage dilated = cvCreateImage(inverimg.asCvMat().cvSize(), IPL_DEPTH_8U, 1);
-        /*opencv_imgproc.cvDilate(inverimg, dilated, null, 1);
-        /*imwrite("samples/dilated.jpg", new Mat(dilated)); // Save dilated version of image*/
+//        /*Dilate image to increase the thickness of each digit*/
+//        IplImage dilated = cvCreateImage(inverimg.asCvMat().cvSize(), IPL_DEPTH_8U, 1);
+//        opencv_imgproc.cvDilate(inverimg, dilated, null, 1);
+//        imwrite("samples/dilated.jpg", new Mat(dilated)); // Save dilated version of image*/
 
         /*Find countour */
         CvMemStorage storage = cvCreateMemStorage(0);
         CvSeq contours = new CvSeq();
-        cvFindContours(dilated.clone(), storage, contours, Loader.sizeof(CvContour.class), CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, cvPoint(0, 0));
+        cvFindContours(inverimg.clone(), storage, contours, Loader.sizeof(CvContour.class), CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, cvPoint(0, 0));
         CvSeq ptr = new CvSeq();
         List<Rect> rects = new ArrayList<>();
         for (ptr = contours; ptr != null; ptr = ptr.h_next()) {
@@ -150,7 +157,7 @@ public class Application {
 
         for (int i = 0; i < rects.size(); i++) {
             Rect rect = rects.get(i);
-            Mat digit = new Mat(dilated).apply(rect);
+            Mat digit = new Mat(inverimg).apply(rect);
             copyMakeBorder(digit, digit, 10, 10, 10, 10, BORDER_CONSTANT, new Scalar(0, 0, 0, 0));
             resize(digit, digit, new Size(28, 28));
             NativeImageLoader loader = new NativeImageLoader(28, 28, 1);
